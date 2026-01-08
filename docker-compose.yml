@@ -55,6 +55,7 @@ services:
     build: ./database
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres-test:5432/clinical_data_test
+      CLEAN_DB: "true"
     depends_on:
       postgres-test:
         condition: service_healthy
