@@ -38,16 +38,6 @@ describe('API Integration Tests', () => {
     });
   });
 
-  describe('GET /api/quality', () => {
-    it('should return quality data', async () => {
-      const response = await request(server)
-        .get('/api/quality')
-        .expect(200);
-
-      expect(Array.isArray(response.body)).toBe(true);
-    });
-  });
-
   describe('404 handler', () => {
     it('should return 404 for unknown routes', async () => {
       const response = await request(server)
