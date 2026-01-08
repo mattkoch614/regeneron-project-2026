@@ -1,4 +1,6 @@
 services:
+  # Primary PostgreSQL database for development
+  # Runs on port 5432 with persistent storage and auto-initializes schema from bootstrap.sql
   postgres:
     image: public.ecr.aws/docker/library/postgres:15
     environment:
@@ -16,6 +18,29 @@ services:
       timeout: 5s
       retries: 5
 
+  # Isolated PostgreSQL database for integration tests
+  # Runs on port 5433 to avoid conflicts; uses ephemeral storage (no volume)
+  # Only starts when using --profile test
+  postgres-test:
+    image: public.ecr.aws/docker/library/postgres:15
+    environment:
+      POSTGRES_DB: clinical_data_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./database/bootstrap.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - test
+
+  # Populates the development database with sample data
+  # Run with: docker compose run --rm seed
   seed:
     build: ./database
     environment:
@@ -24,6 +49,20 @@ services:
       postgres:
         condition: service_healthy
 
+  # Populates the test database with sample data for integration tests
+  # Run with: docker compose --profile test run --rm seed-test
+  seed-test:
+    build: ./database
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres-test:5432/clinical_data_test
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    profiles:
+      - test
+
+  # Node.js API server providing REST endpoints for clinical data
+  # Accessible at http://localhost:3000
   api:
     build: ./api
     ports:
@@ -36,6 +75,8 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # React frontend application with Vite dev server
+  # Accessible at http://localhost:5173
   frontend:
     build: ./frontend
     ports:

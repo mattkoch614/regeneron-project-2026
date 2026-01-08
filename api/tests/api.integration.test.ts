@@ -1,18 +1,21 @@
 import request from 'supertest';
 import { Express } from 'express';
 import app from '../src/app';
+import { pool } from '../src/db';
 
-describe('API Routes', () => {
+describe('API Integration Tests', () => {
   let server: Express;
 
   beforeAll(async () => {
     server = await app();
   });
 
+  afterAll(async () => {
+    await pool.end();
+  });
+
   describe('GET /api/studies/overview', () => {
-    it.skip('should return 200 with study data', async () => {
-      // TODO: Requires database connection
-      // This test will be implemented once database mocking/setup is in place
+    it('should return study data', async () => {
       const response = await request(server)
         .get('/api/studies/overview')
         .expect(200);
@@ -23,10 +26,20 @@ describe('API Routes', () => {
     });
   });
 
+  describe('GET /api/quality/distribution', () => {
+    it('should return quality data', async () => {
+      const response = await request(server)
+        .get('/api/quality/distribution')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body).toHaveProperty('executionTime');
+    });
+  });
+
   describe('GET /api/quality', () => {
-    it.skip('should return 200 with quality data', async () => {
-      // TODO: Requires database connection
-      // This test will be implemented once database mocking/setup is in place
+    it('should return quality data', async () => {
       const response = await request(server)
         .get('/api/quality')
         .expect(200);
