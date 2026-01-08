@@ -116,6 +116,16 @@ async function seedDatabase() {
     await client.connect();
     console.log('Connected to database');
 
+    // Clean database before seeding if CLEAN_DB flag is set AND we're in a test environment
+    const isTestEnv = DATABASE_URL.includes('clinical_data_test') || process.env.NODE_ENV === 'test';
+    if (process.env.CLEAN_DB === 'true' && isTestEnv) {
+      console.log('Cleaning test database...');
+      await client.query('TRUNCATE TABLE clinical_data_raw RESTART IDENTITY CASCADE');
+      console.log('Database cleaned');
+    } else if (process.env.CLEAN_DB === 'true' && !isTestEnv) {
+      console.warn('WARNING: CLEAN_DB is set but not in test environment. Skipping truncate for safety.');
+    }
+
     // Target: ~500K rows (adjustable by changing participants per study or measurements per participant)
     const PARTICIPANTS_PER_STUDY = 1000; // 5 studies x 1000 = 5000 participants
     const MEASUREMENTS_PER_PARTICIPANT = 100; // 5000 x 100 = 500,000 measurements
