@@ -115,9 +115,9 @@ function QualityDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
                 dataKey="name"
-                angle={-45}
+                angle={-15}
                 textAnchor="end"
-                height={120}
+                height={80}
                 tick={{ fontSize: 14, fill: '#1f2937' }}
               />
               <YAxis
