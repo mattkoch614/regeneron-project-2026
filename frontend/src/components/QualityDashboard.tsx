@@ -3,30 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
 import Loading from './Loading';
+import { formatNumber, formatCount, formatQuality } from '../utils/formatters';
 
 function QualityDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Format numbers with k suffix for thousands (used in chart labels)
-  const formatNumber = (value: number): string => {
-    if (value >= 1000) {
-      return (value / 1000).toFixed(1) + 'k';
-    }
-    return value.toString();
-  };
-
-  // Format counts with commas (used in tooltips and table)
-  const formatCount = (value: number): string => {
-    return value.toLocaleString();
-  };
-
-  // Format quality score with 4 decimals (used in tooltips and table)
-  const formatQuality = (value: number): string => {
-    return value.toFixed(4);
-  };
 
   // Custom tooltip that uses consistent formatting
   const CustomTooltip = ({ active, payload, label }: any) => {
