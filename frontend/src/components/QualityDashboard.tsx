@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
 
 function QualityDashboard() {
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Format numbers with k suffix for thousands
+  const formatNumber = (value: number): string => {
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1) + 'k';
+    }
+    return value.toString();
+  };
 
   const fetchQualityData = async () => {
     setLoading(true);
@@ -102,8 +110,8 @@ function QualityDashboard() {
         </div>
 
         <div className="mb-6">
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData}>
+          <ResponsiveContainer width="100%" height={450}>
+            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
                 dataKey="name"
@@ -118,8 +126,22 @@ function QualityDashboard() {
               />
               <Tooltip contentStyle={{ fontSize: 14 }} />
               <Legend wrapperStyle={{ fontSize: 14 }} />
-              <Bar dataKey="High Quality (≥0.9)" fill="#10b981" />
-              <Bar dataKey="Low Quality (<0.8)" fill="#ef4444" />
+              <Bar dataKey="High Quality (≥0.9)" fill="#10b981">
+                <LabelList
+                  dataKey="High Quality (≥0.9)"
+                  position="top"
+                  formatter={formatNumber}
+                  style={{ fontSize: 12, fontWeight: 600, fill: '#1f2937' }}
+                />
+              </Bar>
+              <Bar dataKey="Low Quality (<0.8)" fill="#ef4444">
+                <LabelList
+                  dataKey="Low Quality (<0.8)"
+                  position="top"
+                  formatter={formatNumber}
+                  style={{ fontSize: 12, fontWeight: 600, fill: '#1f2937' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
