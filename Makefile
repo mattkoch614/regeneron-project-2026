@@ -6,7 +6,7 @@ help:
 	@echo "  make setup              - Initial setup (copy .env.example, install deps)"
 	@echo "  make test               - Run all unit tests"
 	@echo "  make test-unit          - Run unit tests"
-	@echo "  make test-integration   - Run integration tests (starts DB if needed)"
+	@echo "  make test-integration   - Run API contract tests (mocked, no DB)"
 	@echo "  make test-watch         - Run unit tests in watch mode"
 	@echo "  make start              - Start all services (dev environment)"
 	@echo "  make stop               - Stop all services"
@@ -29,17 +29,10 @@ test:
 test-unit:
 	@cd api && npm test
 
-# Integration tests (requires DB)
+# Integration tests (mocked, no DB required)
 test-integration:
-	@echo "Starting test database..."
-	@docker compose --profile test up -d postgres-test
-	@echo "Waiting for database to be ready..."
-	@sleep 2
-	@docker compose --profile test run --rm seed-test
-	@echo "Running integration tests..."
+	@echo "Running API contract tests..."
 	@cd api && npm run test:integration
-	@echo "Stopping test database..."
-	@docker compose --profile test down
 
 # Watch mode for unit tests
 test-watch:

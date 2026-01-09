@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
+import Loading from './Loading';
 
 function QualityDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,17 +73,11 @@ function QualityDashboard() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Quality Score Distribution by Study</h2>
-        <div className="flex flex-col items-center justify-center h-96">
-          <div className="relative">
-            <div className="inline-block h-16 w-16 animate-spin rounded-full border-8 border-solid border-blue-600 border-r-transparent"></div>
-            <div className="absolute top-0 left-0 h-16 w-16 animate-ping rounded-full border-4 border-blue-400 opacity-20"></div>
-          </div>
-          <p className="mt-6 text-lg text-gray-600 font-medium">Loading quality data...</p>
-          <p className="mt-2 text-sm text-gray-400">Analyzing 500,000+ measurements</p>
-        </div>
-      </div>
+      <Loading
+        title="Quality Score Distribution by Study"
+        message="Loading quality data..."
+        subtitle="Analyzing 500,000+ measurements"
+      />
     );
   }
 
@@ -210,14 +207,18 @@ function QualityDashboard() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200">
                 {data.data.map((item, index) => (
-                  <tr key={item.study_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr
+                    key={item.study_id}
+                    onClick={() => navigate(`/studies/${item.study_id}`)}
+                    className={`cursor-pointer transition-colors duration-150 hover:bg-blue-50 ${
+                      index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
-                        <div className="text-sm text-gray-500">{item.study_id}</div>
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
+                      <div className="text-sm text-gray-500">{item.study_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
                       {formatCount(item.total_measurements)}

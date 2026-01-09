@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { StudyOverviewResponse } from '../types';
+import Loading from './Loading';
 
 function StudyOverview() {
   const [data, setData] = useState<StudyOverviewResponse | null>(null);
@@ -32,12 +34,11 @@ function StudyOverview() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Study Overview</h2>
-        <div className="flex items-center justify-center h-64">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-        </div>
-      </div>
+      <Loading
+        title="Study Overview"
+        message="Loading studies..."
+        subtitle="Fetching active clinical trials"
+      />
     );
   }
 
@@ -70,7 +71,11 @@ function StudyOverview() {
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {data.data.map((study) => (
-          <div key={study.study_id} className="border border-gray-200 rounded-lg p-5">
+          <Link
+            key={study.study_id}
+            to={`/studies/${study.study_id}`}
+            className="border border-gray-200 rounded-lg p-5 hover:border-blue-300 hover:shadow-md transition-all block"
+          >
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               {study.study_name}
             </h3>
@@ -94,7 +99,7 @@ function StudyOverview() {
                 <span className="text-sm font-medium text-gray-900">{study.site_count}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
