@@ -155,7 +155,7 @@ function QualityDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Study
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Total Measurements
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -178,7 +178,7 @@ function QualityDashboard() {
                         <div className="text-sm text-gray-500">{item.study_id}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
                       {item.total_measurements.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
