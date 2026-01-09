@@ -138,7 +138,7 @@ function QualityDashboard() {
 
         <div className="mb-6">
           <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 80, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 30, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
                 dataKey="name"
