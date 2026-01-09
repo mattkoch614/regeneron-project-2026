@@ -178,11 +178,11 @@ function QualityDashboard() {
                         <div className="text-sm text-gray-500">{item.study_id}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
                       {item.total_measurements.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`inline-flex text-base font-semibold ${
+                      <span className={`inline-flex text-base font-semibold tabular-nums ${
                         parseFloat(item.avg_quality_score.toString()) >= 0.9
                           ? 'text-green-600'
                           : parseFloat(item.avg_quality_score.toString()) >= 0.8
@@ -192,10 +192,10 @@ function QualityDashboard() {
                         {parseFloat(item.avg_quality_score.toString()).toFixed(3)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
                       {item.high_quality_count.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
                       {item.low_quality_count.toLocaleString()}
                     </td>
                   </tr>
