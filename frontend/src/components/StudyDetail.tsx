@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import Loading from './Loading';
 
 interface StudyDetailData {
   study_id: string;
@@ -62,11 +63,10 @@ function StudyDetail() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-        </div>
-      </div>
+      <Loading
+        message="Loading study details..."
+        subtitle="Gathering participant data"
+      />
     );
   }
 

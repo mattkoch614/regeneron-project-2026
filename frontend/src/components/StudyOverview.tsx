@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import type { StudyOverviewResponse } from '../types';
+import Loading from './Loading';
 
 function StudyOverview() {
   const [data, setData] = useState<StudyOverviewResponse | null>(null);
@@ -33,12 +34,11 @@ function StudyOverview() {
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Study Overview</h2>
-        <div className="flex items-center justify-center h-64">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-        </div>
-      </div>
+      <Loading
+        title="Study Overview"
+        message="Loading studies..."
+        subtitle="Fetching active clinical trials"
+      />
     );
   }
 
