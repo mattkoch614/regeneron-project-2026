@@ -7,12 +7,39 @@ function QualityDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Format numbers with k suffix for thousands
+  // Format numbers with k suffix for thousands (used in chart labels)
   const formatNumber = (value: number): string => {
     if (value >= 1000) {
       return (value / 1000).toFixed(1) + 'k';
     }
     return value.toString();
+  };
+
+  // Format counts with commas (used in tooltips and table)
+  const formatCount = (value: number): string => {
+    return value.toLocaleString();
+  };
+
+  // Format quality score with 4 decimals (used in tooltips and table)
+  const formatQuality = (value: number): string => {
+    return value.toFixed(4);
+  };
+
+  // Custom tooltip that uses consistent formatting
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
+          <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: {formatCount(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   const fetchQualityData = async () => {
@@ -111,7 +138,7 @@ function QualityDashboard() {
 
         <div className="mb-6">
           <ResponsiveContainer width="100%" height={450}>
-            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 10, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 80, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
               <XAxis
                 dataKey="name"
@@ -122,9 +149,9 @@ function QualityDashboard() {
               />
               <YAxis
                 tick={{ fontSize: 14, fill: '#1f2937' }}
-                label={{ value: 'Count', angle: -90, position: 'insideLeft', style: { fontSize: 14, fill: '#1f2937' } }}
+                label={{ value: 'Record count', angle: -90, position: 'left', style: { fontSize: 14, fill: '#1f2937' } }}
               />
-              <Tooltip contentStyle={{ fontSize: 14 }} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 14 }} />
               <Bar dataKey="High Quality (≥0.9)" fill="#10b981">
                 <LabelList
@@ -144,6 +171,9 @@ function QualityDashboard() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          <p className="text-xs text-gray-500 text-center mt-2">
+            Note: Values from 0.80–0.89 are not included in Low Quality.
+          </p>
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -181,8 +211,8 @@ function QualityDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.data.map((item) => (
-                  <tr key={item.study_id}>
+                {data.data.map((item, index) => (
+                  <tr key={item.study_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
@@ -190,7 +220,7 @@ function QualityDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
-                      {item.total_measurements.toLocaleString()}
+                      {formatCount(item.total_measurements)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <span className={`inline-flex text-base font-semibold tabular-nums ${
@@ -200,14 +230,14 @@ function QualityDashboard() {
                           ? 'text-yellow-600'
                           : 'text-red-600'
                       }`}>
-                        {parseFloat(item.avg_quality_score.toString()).toFixed(4)}
+                        {formatQuality(parseFloat(item.avg_quality_score.toString()))}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
-                      {item.high_quality_count.toLocaleString()}
+                      {formatCount(item.high_quality_count)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
-                      {item.low_quality_count.toLocaleString()}
+                      {formatCount(item.low_quality_count)}
                     </td>
                   </tr>
                 ))}
