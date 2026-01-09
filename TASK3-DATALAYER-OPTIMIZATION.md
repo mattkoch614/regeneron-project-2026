@@ -38,6 +38,13 @@ Partition the `measurements` table by `measurement_timestamp` using monthly inte
 - **Smaller indexes** – each partition maintains its own indexes
 - **Easier archival** – old partitions can be dropped or archived independently
 
+### Indexing
+Key indexes to support common access patterns:
+- `(enrollment_id, measurement_timestamp)` on `measurements` – participant/study history queries
+- `(performing_site_id, measurement_timestamp)` on `measurements` – site analytics
+- `(measurement_type_id, measurement_timestamp)` on `measurements` – measurement type trends
+- `(study_id)` on `study_enrollments` – study cohort queries
+
 ### Pre-Aggregations
 Introduce materialized views for high-traffic dashboard queries:
 - Quality score distributions per study
@@ -144,16 +151,13 @@ erDiagram
 
 **Complexity:**
 - More tables and relationships compared to a single denormalized table
-- Some queries require joins (mitigated by `enrollment_id` and `performing_site_id` on measurements)
+- Some queries require joins through `study_enrollments`
+- Dashboard aggregations benefit significantly; participant-level queries involve more joins
 
 **Operational overhead:**
 - Partition management (creation, archival) requires automation
 - Materialized view refresh adds minor data freshness lag (5–15 minutes)
-- Migration from current schema requires planning and testing
-
-**Query patterns:**
-- Simple "give me all data for participant X" queries now require joins through `study_enrollments`
-- Dashboard aggregations benefit significantly; row-level queries trade denormalization for correctness
+- Migration from current schema requires planning and validation
 
 ---
 
