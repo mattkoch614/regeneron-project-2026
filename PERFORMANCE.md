@@ -39,9 +39,15 @@ time curl -s http://localhost:3000/api/quality/distribution
 - Fixed SQL injection vulnerability (was using string interpolation)
 
 **Results**:
-- Execution time: [TBD - to be measured]
-- Database queries: 1
-- Improvement vs baseline: [TBD]%
+- **Execution time**: ~1.22s average
+  - Test 1: 1.31s (1311ms)
+  - Test 2: 1.18s (1176ms)
+  - Test 3: 1.17s (1166ms)
+- **Database queries**: 1 (reduced from 21)
+- **Improvement vs baseline**: ~6% slower (-0.07s)
+
+**Analysis**:
+No significant performance improvement at this stage because we're still doing a full table scan on 1M rows. The single query must scan the entire table to compute aggregates across all studies. Without indexes, PostgreSQL cannot optimize the GROUP BY operation. Expected improvement will come from adding indexes in Step 3.
 
 ---
 
