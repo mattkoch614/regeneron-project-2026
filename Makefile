@@ -1,4 +1,4 @@
-.PHONY: help setup test test-unit test-integration test-watch clean start stop logs
+.PHONY: help setup test test-unit test-integration test-watch clean start stop logs rebuild-frontend
 
 # Default target
 help:
@@ -11,6 +11,7 @@ help:
 	@echo "  make start              - Start all services (dev environment)"
 	@echo "  make stop               - Stop all services"
 	@echo "  make logs               - Show logs for all services"
+	@echo "  make rebuild-frontend   - Rebuild and restart frontend service"
 	@echo "  make clean              - Stop services and clean up volumes"
 
 # Initial setup
@@ -53,6 +54,13 @@ stop:
 
 logs:
 	@docker compose logs -f
+
+# Rebuild frontend
+rebuild-frontend:
+	@echo "Rebuilding frontend..."
+	@docker compose build frontend
+	@docker compose up -d frontend
+	@echo "Frontend rebuilt and restarted!"
 
 # Clean up
 clean:

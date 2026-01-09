@@ -1,11 +1,46 @@
 import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
 
 function QualityDashboard() {
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Format numbers with k suffix for thousands (used in chart labels)
+  const formatNumber = (value: number): string => {
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1) + 'k';
+    }
+    return value.toString();
+  };
+
+  // Format counts with commas (used in tooltips and table)
+  const formatCount = (value: number): string => {
+    return value.toLocaleString();
+  };
+
+  // Format quality score with 4 decimals (used in tooltips and table)
+  const formatQuality = (value: number): string => {
+    return value.toFixed(4);
+  };
+
+  // Custom tooltip that uses consistent formatting
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
+          <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {entry.name}: {formatCount(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   const fetchQualityData = async () => {
     setLoading(true);
@@ -102,17 +137,43 @@ function QualityDashboard() {
         </div>
 
         <div className="mb-6">
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={120} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="High Quality (≥0.9)" fill="#10b981" />
-              <Bar dataKey="Low Quality (<0.8)" fill="#ef4444" />
+          <ResponsiveContainer width="100%" height={450}>
+            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 30, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+              <XAxis
+                dataKey="name"
+                angle={-15}
+                textAnchor="end"
+                height={80}
+                tick={{ fontSize: 14, fill: '#1f2937' }}
+              />
+              <YAxis
+                tick={{ fontSize: 14, fill: '#1f2937' }}
+                label={{ value: 'Record count', angle: -90, position: 'left', style: { fontSize: 14, fill: '#1f2937' } }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ fontSize: 14 }} />
+              <Bar dataKey="High Quality (≥0.9)" fill="#10b981">
+                <LabelList
+                  dataKey="High Quality (≥0.9)"
+                  position="top"
+                  formatter={formatNumber}
+                  style={{ fontSize: 12, fontWeight: 600, fill: '#1f2937' }}
+                />
+              </Bar>
+              <Bar dataKey="Low Quality (<0.8)" fill="#ef4444">
+                <LabelList
+                  dataKey="Low Quality (<0.8)"
+                  position="top"
+                  formatter={formatNumber}
+                  style={{ fontSize: 12, fontWeight: 600, fill: '#1f2937' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
+          <p className="text-xs text-gray-500 text-center mt-2">
+            Note: Values from 0.80–0.89 are not included in Low Quality.
+          </p>
         </div>
 
         <div className="border-t border-gray-200 pt-6">
@@ -124,11 +185,22 @@ function QualityDashboard() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Study
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Total Measurements
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avg Quality
+                    <span className="inline-flex items-center gap-1">
+                      Avg Quality
+                      <span
+                        className="inline-block cursor-help"
+                        title="Average of record-level quality scores (0-1 scale)&#10;&#10;Green: ≥ 0.90 (High Quality)&#10;Yellow: ≥ 0.80 (Medium Quality)&#10;Red: < 0.80 (Low Quality)&#10;&#10;Note: Demo data generated during seeding"
+                        aria-label="Average quality score explanation: Scores range from 0 to 1, with green for high quality (0.90 or above), yellow for medium quality (0.80 to 0.89), and red for low quality (below 0.80). This is demo data."
+                      >
+                        <svg className="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    </span>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     High Quality
@@ -139,33 +211,33 @@ function QualityDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.data.map((item) => (
-                  <tr key={item.study_id}>
+                {data.data.map((item, index) => (
+                  <tr key={item.study_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
                         <div className="text-sm text-gray-500">{item.study_id}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.total_measurements.toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
+                      {formatCount(item.total_measurements)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`inline-flex text-sm font-medium ${
+                      <span className={`inline-flex text-base font-semibold tabular-nums ${
                         parseFloat(item.avg_quality_score.toString()) >= 0.9
                           ? 'text-green-600'
                           : parseFloat(item.avg_quality_score.toString()) >= 0.8
                           ? 'text-yellow-600'
                           : 'text-red-600'
                       }`}>
-                        {parseFloat(item.avg_quality_score.toString()).toFixed(3)}
+                        {formatQuality(parseFloat(item.avg_quality_score.toString()))}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.high_quality_count.toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
+                      {formatCount(item.high_quality_count)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.low_quality_count.toLocaleString()}
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
+                      {formatCount(item.low_quality_count)}
                     </td>
                   </tr>
                 ))}
