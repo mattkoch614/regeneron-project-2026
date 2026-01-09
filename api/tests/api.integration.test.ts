@@ -28,6 +28,17 @@ describe('API Contract Tests', () => {
     await pool.end();
   });
 
+  describe('GET /health', () => {
+    it('should return healthy status', async () => {
+      const response = await request(server)
+        .get('/health')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('status', 'healthy');
+      expect(response.body).toHaveProperty('timestamp');
+    });
+  });
+
   describe('GET /api/studies/overview', () => {
     it('should return study data with correct shape', async () => {
       // Mock database response
