@@ -189,7 +189,7 @@ function QualityDashboard() {
                           ? 'text-yellow-600'
                           : 'text-red-600'
                       }`}>
-                        {parseFloat(item.avg_quality_score.toString()).toFixed(3)}
+                        {parseFloat(item.avg_quality_score.toString()).toFixed(4)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900 tabular-nums">
