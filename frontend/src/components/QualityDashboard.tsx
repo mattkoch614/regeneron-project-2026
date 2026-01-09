@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
 import Loading from './Loading';
@@ -209,10 +210,10 @@ function QualityDashboard() {
                 {data.data.map((item, index) => (
                   <tr key={item.study_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
+                      <Link to={`/studies/${item.study_id}`} className="block hover:bg-blue-50 -mx-6 -my-4 px-6 py-4">
+                        <div className="text-sm font-medium text-blue-600 hover:text-blue-800">{item.study_name}</div>
                         <div className="text-sm text-gray-500">{item.study_id}</div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
                       {formatCount(item.total_measurements)}

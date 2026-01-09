@@ -126,8 +126,8 @@ describe('API Contract Tests', () => {
         .mockResolvedValueOnce({
           // Site distribution query
           rows: [
-            { site_id: 'SITE_NY01', participant_count: '250' },
-            { site_id: 'SITE_CA01', participant_count: '200' }
+            { site_id: 'SITE_NY01', site_name: 'New York Medical Center', participant_count: '250' },
+            { site_id: 'SITE_CA01', site_name: 'California Research Institute', participant_count: '200' }
           ]
         } as any);
 
@@ -150,6 +150,9 @@ describe('API Contract Tests', () => {
       expect(response.body.data.gender_breakdown[0]).toHaveProperty('percentage');
       expect(response.body.data).toHaveProperty('site_distribution');
       expect(Array.isArray(response.body.data.site_distribution)).toBe(true);
+      expect(response.body.data.site_distribution[0]).toHaveProperty('site_id');
+      expect(response.body.data.site_distribution[0]).toHaveProperty('site_name');
+      expect(response.body.data.site_distribution[0]).toHaveProperty('participant_count');
       expect(response.body.data).toHaveProperty('avg_measurements_per_participant');
       expect(response.body.data).toHaveProperty('date_range');
       expect(response.body.data.date_range).toHaveProperty('start_date');

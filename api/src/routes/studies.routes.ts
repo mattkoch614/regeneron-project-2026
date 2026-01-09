@@ -103,14 +103,15 @@ router.get('/:studyId', async (req: Request, res: Response) => {
 
     const genderResult = await pool.query(genderQuery, [studyId]);
 
-    // Get site distribution
+    // Get site distribution with names
     const siteQuery = `
       SELECT 
         site_id,
+        site_name,
         COUNT(DISTINCT participant_id) as participant_count
       FROM clinical_data_raw
       WHERE study_id = $1
-      GROUP BY site_id
+      GROUP BY site_id, site_name
       ORDER BY site_id
     `;
 
@@ -140,6 +141,7 @@ router.get('/:studyId', async (req: Request, res: Response) => {
         })),
         site_distribution: siteResult.rows.map(s => ({
           site_id: s.site_id,
+          site_name: s.site_name,
           participant_count: parseInt(s.participant_count)
         })),
         total_measurements: totalMeasurements,

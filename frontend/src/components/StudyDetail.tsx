@@ -19,6 +19,7 @@ interface StudyDetailData {
   }>;
   site_distribution: Array<{
     site_id: string;
+    site_name: string;
     participant_count: number;
   }>;
   total_measurements: number;
@@ -165,7 +166,7 @@ function StudyDetail() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Site ID
+                    Site
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Participants
@@ -175,8 +176,9 @@ function StudyDetail() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {data.site_distribution.map((site, index) => (
                   <tr key={site.site_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {site.site_id}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{site.site_name}</div>
+                      <div className="text-sm text-gray-500">{site.site_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 tabular-nums">
                       {site.participant_count.toLocaleString()}
