@@ -104,11 +104,20 @@ function QualityDashboard() {
         <div className="mb-6">
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={120} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
+              <XAxis
+                dataKey="name"
+                angle={-45}
+                textAnchor="end"
+                height={120}
+                tick={{ fontSize: 14, fill: '#1f2937' }}
+              />
+              <YAxis
+                tick={{ fontSize: 14, fill: '#1f2937' }}
+                label={{ value: 'Count', angle: -90, position: 'insideLeft', style: { fontSize: 14, fill: '#1f2937' } }}
+              />
+              <Tooltip contentStyle={{ fontSize: 14 }} />
+              <Legend wrapperStyle={{ fontSize: 14 }} />
               <Bar dataKey="High Quality (≥0.9)" fill="#10b981" />
               <Bar dataKey="Low Quality (<0.8)" fill="#ef4444" />
             </BarChart>
@@ -147,11 +156,11 @@ function QualityDashboard() {
                         <div className="text-sm text-gray-500">{item.study_id}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
                       {item.total_measurements.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <span className={`inline-flex text-sm font-medium ${
+                      <span className={`inline-flex text-base font-semibold ${
                         parseFloat(item.avg_quality_score.toString()) >= 0.9
                           ? 'text-green-600'
                           : parseFloat(item.avg_quality_score.toString()) >= 0.8
@@ -161,10 +170,10 @@ function QualityDashboard() {
                         {parseFloat(item.avg_quality_score.toString()).toFixed(3)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
                       {item.high_quality_count.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium text-gray-900">
                       {item.low_quality_count.toLocaleString()}
                     </td>
                   </tr>
