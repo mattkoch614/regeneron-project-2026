@@ -6,8 +6,6 @@ function QualityDashboard() {
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Bug: fetchCount used to track fetches but causes extra re-renders
-  const [fetchCount, setFetchCount] = useState(0);
 
   const fetchQualityData = async () => {
     setLoading(true);
@@ -22,11 +20,6 @@ function QualityDashboard() {
 
       const result: QualityDistributionResponse = await response.json();
       setData(result);
-      // Bug: Setting fetchCount here triggers re-render, which triggers useEffect again
-      // This will cause 2-3 fetches before fetchCount reaches 3
-      if (fetchCount < 3) {
-        setFetchCount(fetchCount + 1);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch data');
     } finally {
@@ -35,11 +28,10 @@ function QualityDashboard() {
   };
 
   useEffect(() => {
-    // Bug: fetchCount in dependency array causes this to run whenever fetchCount changes
-    // Combined with the setFetchCount in fetchQualityData, this creates 2-3 extra calls
+    // Fetch data once on component mount
     fetchQualityData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchCount]);
+  }, []);
 
   if (loading) {
     return (
@@ -156,7 +148,7 @@ function QualityDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.total_measurements}
+                      {item.total_measurements.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right">
                       <span className={`inline-flex text-sm font-medium ${
@@ -166,14 +158,14 @@ function QualityDashboard() {
                           ? 'text-yellow-600'
                           : 'text-red-600'
                       }`}>
-                        {parseFloat(item.avg_quality_score.toString()).toFixed(4)}
+                        {parseFloat(item.avg_quality_score.toString()).toFixed(3)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.high_quality_count}
+                      {item.high_quality_count.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                      {item.low_quality_count}
+                      {item.low_quality_count.toLocaleString()}
                     </td>
                   </tr>
                 ))}

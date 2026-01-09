@@ -78,12 +78,20 @@ The indexes provide significant performance improvement by eliminating full tabl
 ### Step 4: Frontend UX Improvements
 **Goal**: Fix bugs and improve data readability
 
-**Changes**:
-- Fixed `fetchCount` dependency bug (prevented extra fetches)
-- Added number formatting with commas
-- Improved decimal precision display
+**Implementation**:
+- **Fixed `fetchCount` bug**: Removed `fetchCount` state and dependency from useEffect
+  - Previously caused 2-3 extra API calls on component mount
+  - Now fetches data exactly once on mount
+- **Number formatting**: Added `toLocaleString()` to all numeric columns
+  - `200000` → `200,000` (easier to read)
+  - Applied to: total_measurements, high_quality_count, low_quality_count
+- **Decimal precision**: Changed avg_quality_score from `.toFixed(4)` to `.toFixed(3)`
+  - `0.8931` instead of `0.89306690` (cleaner display)
 
-**Impact**: UX improvements, no performance impact on API
+**Impact**:
+- UX improvements only, no API performance impact
+- Reduced unnecessary API calls from 3 to 1 on page load
+- Numbers are significantly more readable
 
 ---
 
