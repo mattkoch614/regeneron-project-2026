@@ -3,57 +3,41 @@ import { pool } from '../db';
 
 const router = Router();
 
-// Deliberately unoptimized study overview endpoint
-// Similar inefficiencies to quality endpoint - N+1 pattern with multiple queries
+// Optimized study overview endpoint using single aggregated query
+// Performance improvements:
+// - Single GROUP BY query replaces N+1 pattern (16 queries → 1 query)
+// - Database performs aggregation instead of API layer
+// - Uses COUNT(DISTINCT ...) for participant and site counts
 router.get('/overview', async (req: Request, res: Response) => {
   const startTime = Date.now();
 
   try {
-    // First query: Get all unique studies (full table scan)
-    const studiesQuery = `
-      SELECT DISTINCT study_id, study_name, study_phase
+    // Single aggregated query with GROUP BY
+    // Uses COUNT(DISTINCT ...) for unique counts of participants and sites
+    const query = `
+      SELECT
+        study_id,
+        study_name,
+        study_phase,
+        COUNT(DISTINCT participant_id) as participant_count,
+        COUNT(*) as total_measurements,
+        COUNT(DISTINCT site_id) as site_count
       FROM clinical_data_raw
+      GROUP BY study_id, study_name, study_phase
       ORDER BY study_id
     `;
-    const studiesResult = await pool.query(studiesQuery);
 
-    // For each study, make separate queries (N+1 pattern)
-    const data = [];
-    for (const study of studiesResult.rows) {
-      // Query 1: Count participants for this study
-      const participantQuery = `
-        SELECT COUNT(DISTINCT participant_id) as participant_count
-        FROM clinical_data_raw
-        WHERE study_id = '${study.study_id}'
-      `;
-      const participantResult = await pool.query(participantQuery);
+    const result = await pool.query(query);
 
-      // Query 2: Count total measurements for this study
-      const measurementQuery = `
-        SELECT COUNT(*) as total_measurements
-        FROM clinical_data_raw
-        WHERE study_id = '${study.study_id}'
-      `;
-      const measurementResult = await pool.query(measurementQuery);
-
-      // Query 3: Count sites for this study
-      const siteQuery = `
-        SELECT COUNT(DISTINCT site_id) as site_count
-        FROM clinical_data_raw
-        WHERE study_id = '${study.study_id}'
-      `;
-      const siteResult = await pool.query(siteQuery);
-
-      // Join data at API layer
-      data.push({
-        study_id: study.study_id,
-        study_name: study.study_name,
-        study_phase: study.study_phase,
-        participant_count: parseInt(participantResult.rows[0].participant_count),
-        total_measurements: parseInt(measurementResult.rows[0].total_measurements),
-        site_count: parseInt(siteResult.rows[0].site_count)
-      });
-    }
+    // Transform database results to match API response format
+    const data = result.rows.map(row => ({
+      study_id: row.study_id,
+      study_name: row.study_name,
+      study_phase: row.study_phase,
+      participant_count: parseInt(row.participant_count),
+      total_measurements: parseInt(row.total_measurements),
+      site_count: parseInt(row.site_count)
+    }));
 
     const executionTime = Date.now() - startTime;
 
