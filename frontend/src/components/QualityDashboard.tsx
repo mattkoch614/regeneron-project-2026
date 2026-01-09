@@ -159,7 +159,18 @@ function QualityDashboard() {
                     Total Measurements
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Avg Quality
+                    <span className="inline-flex items-center gap-1">
+                      Avg Quality
+                      <span
+                        className="inline-block cursor-help"
+                        title="Average of record-level quality scores (0-1 scale)&#10;&#10;Green: ≥ 0.90 (High Quality)&#10;Yellow: ≥ 0.80 (Medium Quality)&#10;Red: < 0.80 (Low Quality)&#10;&#10;Note: Demo data generated during seeding"
+                        aria-label="Average quality score explanation: Scores range from 0 to 1, with green for high quality (0.90 or above), yellow for medium quality (0.80 to 0.89), and red for low quality (below 0.80). This is demo data."
+                      >
+                        <svg className="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </span>
+                    </span>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     High Quality
