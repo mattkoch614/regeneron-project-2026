@@ -10,6 +10,7 @@
 - Prefer short, single-line commit messages by default.
 - Add a commit body only when explaining non-obvious decisions or performance tradeoffs.
 - Do not include AI attribution footers (e.g., Co-Authored-By) unless I explicitly ask. This is to keep commits clean - AI Attribution will be added in a deliverable document/README.
+- Make sure to show the proposed commit message and wait for explicit approval before running the git commit command.
 
 
 ## Optimize for:
