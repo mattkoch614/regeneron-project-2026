@@ -9,6 +9,5 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
   ],
-  testTimeout: 30000, // Longer timeout for database operations
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.integration.ts'],
+  testTimeout: 10000, // Reduced timeout for mocked tests
 };
