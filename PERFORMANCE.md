@@ -55,13 +55,23 @@ No significant performance improvement at this stage because we're still doing a
 **Goal**: Add indexes to eliminate full table scans
 
 **Implementation**:
-- Added index on `study_id`
-- Added functional index on `CAST(quality_score AS DECIMAL)`
+- Added index on `study_id` (optimizes GROUP BY operation)
+- Added functional index on `CAST(quality_score AS DECIMAL)` (optimizes quality filtering)
+- Recreated database with new schema
 
 **Results**:
-- Execution time: [TBD - to be measured]
-- Improvement vs baseline: [TBD]%
-- Improvement vs Step 2: [TBD]%
+- **Execution time**: ~0.60s average
+  - Test 1: 0.61s (609ms)
+  - Test 2: 0.59s (594ms)
+  - Test 3: 0.58s (584ms)
+- **Improvement vs baseline**: 48% faster (1.15s → 0.60s, saved 0.55s)
+- **Improvement vs Step 2**: 51% faster (1.22s → 0.60s, saved 0.62s)
+
+**Analysis**:
+The indexes provide significant performance improvement by eliminating full table scans. PostgreSQL can now:
+1. Use `idx_study_id` to efficiently GROUP BY study_id
+2. Use `idx_quality_score_numeric` to avoid repeated CAST operations during aggregation
+3. Process the query in ~half the time compared to baseline
 
 ---
 
