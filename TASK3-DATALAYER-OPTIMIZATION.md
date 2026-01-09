@@ -17,7 +17,7 @@ Transition from a single wide table to a normalized, analytics-friendly schema:
 
 **Dimension tables:**
 - `studies` – study metadata and configuration
-- `sites` – site locations and coordinators
+- `sites` – site locations and coordinators (only assuming 1 coordinator per site for now.)
 - `participants` – participant demographics
 - `study_enrollments` – links participants to studies with enrollment context
 - `measurement_types` – measurement categories and units
@@ -31,39 +31,6 @@ Transition from a single wide table to a normalized, analytics-friendly schema:
 - Indexes are less efficient on text-based numeric columns
 
 The normalized schema with proper types (`numeric`, `timestamptz`, etc.) delivers both performance and data integrity improvements.
-
-### Partitioning
-Partition the `measurements` table by `measurement_timestamp` using monthly intervals. Benefits:
-- **Partition pruning** – queries filtering by date only scan relevant partitions
-- **Smaller indexes** – each partition maintains its own indexes
-- **Easier archival** – old partitions can be dropped or archived independently
-
-### Indexing
-Key indexes to support common access patterns:
-- `(enrollment_id, measurement_timestamp)` on `measurements` – participant/study history queries
-- `(performing_site_id, measurement_timestamp)` on `measurements` – site analytics
-- `(measurement_type_id, measurement_timestamp)` on `measurements` – measurement type trends
-- `(study_id)` on `study_enrollments` – study cohort queries
-
-### Pre-Aggregations
-Introduce materialized views for high-traffic dashboard queries:
-- Quality score distributions per study
-- Participant enrollment counts
-- Summary statistics by site
-
-These can refresh on a schedule (e.g., every 5–15 minutes) to balance freshness with query load.
-
-### Future Extensions
-If time-series workloads dominate, consider:
-- **TimescaleDB** – Postgres extension optimized for time-series data
-- **Continuous aggregates** – automatic materialized view maintenance
-- **Data retention policies** – automated archival of old data
-
-The proposed schema remains compatible with native Postgres and these extensions.
-
----
-
-## Schema Design
 
 ### Entity Relationship Diagram
 ```mermaid
@@ -125,6 +92,35 @@ erDiagram
   }
 
 ```
+
+### Partitioning
+As data grows, consider a strategy where we partition the `measurements` table by `measurement_timestamp` using monthly intervals. Benefits:
+- **Partition pruning** – queries filtering by date only scan relevant partitions
+- **Smaller indexes** – each partition maintains its own indexes
+- **Easier archival** – old partitions can be dropped or archived independently
+
+### Indexing
+Key indexes to support common access patterns, e.g.:
+- `(enrollment_id, measurement_timestamp)` on `measurements` – participant/study history queries
+- `(performing_site_id, measurement_timestamp)` on `measurements` – site analytics
+- `(measurement_type_id, measurement_timestamp)` on `measurements` – measurement type trends
+- `(study_id)` on `study_enrollments` – study cohort queries
+
+### Pre-Aggregations
+Introduce materialized views for high-traffic dashboard queries:
+- Quality score distributions per study
+- Participant enrollment counts
+- Summary statistics by site
+
+These can refresh on a schedule (e.g., every 5–15 minutes) to balance freshness with query load.
+
+### Future Extensions
+If time-series workloads dominate, consider:
+- **TimescaleDB** – Postgres extension optimized for time-series data
+- **Continuous aggregates** – automatic materialized view maintenance
+- **Data retention policies** – automated archival of old data
+
+The proposed schema remains compatible with native Postgres and these extensions.
 
 ---
 
