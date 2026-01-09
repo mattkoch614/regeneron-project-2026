@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 import type { QualityDistributionResponse } from '../types';
 import Loading from './Loading';
 
 function QualityDashboard() {
+  const navigate = useNavigate();
   const [data, setData] = useState<QualityDistributionResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -206,14 +207,18 @@ function QualityDashboard() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200">
                 {data.data.map((item, index) => (
-                  <tr key={item.study_id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr
+                    key={item.study_id}
+                    onClick={() => navigate(`/studies/${item.study_id}`)}
+                    className={`cursor-pointer transition-colors duration-150 hover:bg-blue-50 ${
+                      index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                    }`}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link to={`/studies/${item.study_id}`} className="block hover:bg-blue-50 -mx-6 -my-4 px-6 py-4">
-                        <div className="text-sm font-medium text-blue-600 hover:text-blue-800">{item.study_name}</div>
-                        <div className="text-sm text-gray-500">{item.study_id}</div>
-                      </Link>
+                      <div className="text-sm font-medium text-gray-900">{item.study_name}</div>
+                      <div className="text-sm text-gray-500">{item.study_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 tabular-nums">
                       {formatCount(item.total_measurements)}
