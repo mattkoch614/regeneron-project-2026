@@ -61,6 +61,17 @@ Added minimal test suite (unit + integration tests) to establish foundation for 
 
 ---
 
+## Development Tools
+
+Added a `Makefile` with common commands for easier workflow:
+- `make start` - Start all services
+- `make test` - Run tests
+- `make clean` - Clean up containers
+
+This provides consistent, repeatable commands across environments.
+
+---
+
 ## AI Tool Usage
 
 Completed using **Claude Code** for autonomous codebase exploration, implementation, testing, and documentation.
