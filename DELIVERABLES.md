@@ -87,7 +87,7 @@ curl -s http://localhost:3000/api/quality/distribution | grep executionTime
 # Expected: ~0.57-0.66s
 
 # Test Task 2 feature
-curl http://localhost:3000/api/studies/CARD-001 | jq
+curl -s http://localhost:3000/api/studies/CARDIO001 | grep executionTime
 # Expected: Response in ~40-60ms
 
 # Verify indexes
