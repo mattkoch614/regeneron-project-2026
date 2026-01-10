@@ -44,3 +44,10 @@ This assessment was completed using **Claude Code** (Anthropic's CLI tool), and 
 ## Conclusion
 
 Claude Code served as a collaborative development partner, handling implementation details while maintaining human oversight for strategic decisions. The tool excelled at autonomous exploration, code generation, testing, and documentation.
+
+However, like any AI tool, Claude Code didn't always get things right on the first try. I had to inspect implementation details and provide course corrections, such as:
+- Refactoring formatting logic into reusable utility functions instead of embedding directly in components
+- Extracting common UI patterns (e.g., Loading component) for better code organization
+- Guiding architectural decisions to maintain consistency with existing patterns
+
+This reinforces that AI tools are most effective as assistants rather than autonomous developers—they accelerate development significantly but benefit from human review and direction.
