@@ -91,7 +91,7 @@ curl -s http://localhost:3000/api/studies/CARDIO001 | grep executionTime
 # Expected: Response in ~40-60ms
 
 # Verify indexes
-docker compose exec db psql -U postgres -d clinical_data -c "SELECT indexname FROM pg_indexes WHERE tablename = 'clinical_data_raw';"
+docker compose exec postgres psql -U postgres -d clinical_data -c "SELECT indexname FROM pg_indexes WHERE tablename = 'clinical_data_raw';"
 ```
 
 ---
