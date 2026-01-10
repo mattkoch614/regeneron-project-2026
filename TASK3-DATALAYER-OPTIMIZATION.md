@@ -1,4 +1,4 @@
-# Data Layer Optimization Proposal
+# Task 3: Data Layer Optimization Proposal
 
 ## Overview
 The current system stores all measurements in a single denormalized table (~500K rows). With planned growth to 20+ studies, tens of thousands of participants, and 50–100M+ measurements, the infrastructure needs to scale appropriately.
