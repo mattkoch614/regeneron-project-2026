@@ -50,6 +50,17 @@ SQL files in `database/migrations/`:
 
 ---
 
+## Testing Infrastructure
+
+Added minimal test suite (unit + integration tests) to establish foundation for future TDD workflow. While not required for the assessment, this provides:
+- Quick feedback loop for development iterations
+- Confidence when refactoring
+- Template for expanding test coverage
+
+**📄 Details**: [api/tests/README.md](api/tests/README.md)
+
+---
+
 ## AI Tool Usage
 
 Completed using **Claude Code** for autonomous codebase exploration, implementation, testing, and documentation.
