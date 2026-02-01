@@ -8,6 +8,7 @@ const router = Router();
 // - Single GROUP BY query replaces N+1 pattern (16 queries → 1 query)
 // - Database performs aggregation instead of API layer
 // - Uses COUNT(DISTINCT ...) for participant and site counts
+// - Static query (no user input) - no parameterization needed
 router.get('/overview', async (req: Request, res: Response) => {
   const startTime = Date.now();
 
@@ -63,6 +64,7 @@ router.get('/:studyId', async (req: Request, res: Response) => {
   try {
     // Aggregated query for participant summary
     // Calculate age from DOB using EXTRACT(YEAR FROM AGE(...))
+    // Parameterized query ($1) prevents SQL injection
     const query = `
       SELECT
         study_id,
@@ -90,7 +92,7 @@ router.get('/:studyId', async (req: Request, res: Response) => {
       });
     }
 
-    // Get gender breakdown
+    // Get gender breakdown (parameterized query with $1)
     const genderQuery = `
       SELECT 
         participant_gender,
@@ -103,7 +105,7 @@ router.get('/:studyId', async (req: Request, res: Response) => {
 
     const genderResult = await pool.query(genderQuery, [studyId]);
 
-    // Get site distribution with names
+    // Get site distribution with names (parameterized query with $1)
     const siteQuery = `
       SELECT 
         site_id,
