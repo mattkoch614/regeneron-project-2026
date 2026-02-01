@@ -7,7 +7,7 @@ const router = Router();
 // Performance improvements:
 // - Single GROUP BY query replaces N+1 pattern (21 queries → 1 query)
 // - Database performs aggregation instead of API layer
-// - Parameterized query prevents SQL injection
+// - Static query (no user input) - no parameterization needed
 // Note: Still performing CAST on quality_score (stored as TEXT) - indexes will further optimize this
 router.get('/distribution', async (req: Request, res: Response) => {
   const startTime = Date.now();
