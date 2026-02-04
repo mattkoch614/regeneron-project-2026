@@ -1,49 +1,50 @@
 import { Router, Request, Response } from 'express';
 import { pool } from '../db';
+import { cacheGet } from '../cache';
 
 const router = Router();
 
 // Optimized study overview endpoint using single aggregated query
 // Performance improvements:
+// - In-memory caching (1 hour TTL) for repeated requests
 // - Single GROUP BY query replaces N+1 pattern (16 queries → 1 query)
 // - Database performs aggregation instead of API layer
 // - Uses COUNT(DISTINCT ...) for participant and site counts
-// - Static query (no user input) - no parameterization needed
-router.get('/overview', async (req: Request, res: Response) => {
+router.get('/overview', async (_req: Request, res: Response) => {
   const startTime = Date.now();
 
   try {
-    // Single aggregated query with GROUP BY
-    // Uses COUNT(DISTINCT ...) for unique counts of participants and sites
-    const query = `
-      SELECT
-        study_id,
-        study_name,
-        study_phase,
-        COUNT(DISTINCT participant_id) as participant_count,
-        COUNT(*) as total_measurements,
-        COUNT(DISTINCT site_id) as site_count
-      FROM clinical_data_raw
-      GROUP BY study_id, study_name, study_phase
-      ORDER BY study_id
-    `;
+    const { data, cached } = await cacheGet('studies:overview', async () => {
+      const query = `
+        SELECT
+          study_id,
+          study_name,
+          study_phase,
+          COUNT(DISTINCT participant_id) as participant_count,
+          COUNT(*) as total_measurements,
+          COUNT(DISTINCT site_id) as site_count
+        FROM clinical_data_raw
+        GROUP BY study_id, study_name, study_phase
+        ORDER BY study_id
+      `;
 
-    const result = await pool.query(query);
+      const result = await pool.query(query);
 
-    // Transform database results to match API response format
-    const data = result.rows.map(row => ({
-      study_id: row.study_id,
-      study_name: row.study_name,
-      study_phase: row.study_phase,
-      participant_count: parseInt(row.participant_count),
-      total_measurements: parseInt(row.total_measurements),
-      site_count: parseInt(row.site_count)
-    }));
+      return result.rows.map(row => ({
+        study_id: row.study_id,
+        study_name: row.study_name,
+        study_phase: row.study_phase,
+        participant_count: parseInt(row.participant_count),
+        total_measurements: parseInt(row.total_measurements),
+        site_count: parseInt(row.site_count)
+      }));
+    });
 
     const executionTime = Date.now() - startTime;
 
     res.json({
       data,
+      cached,
       executionTime: `${executionTime}ms`,
       executionTimeSeconds: (executionTime / 1000).toFixed(2)
     });
@@ -57,76 +58,72 @@ router.get('/overview', async (req: Request, res: Response) => {
 });
 
 // Get individual study participant summary by ID
+// In-memory caching with dynamic key per study
 router.get('/:studyId', async (req: Request, res: Response) => {
   const startTime = Date.now();
   const { studyId } = req.params;
 
   try {
-    // Aggregated query for participant summary
-    // Calculate age from DOB using EXTRACT(YEAR FROM AGE(...))
-    // Parameterized query ($1) prevents SQL injection
-    const query = `
-      SELECT
-        study_id,
-        study_name,
-        study_phase,
-        COUNT(DISTINCT participant_id) as total_participants,
-        AVG(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as avg_age,
-        MIN(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as min_age,
-        MAX(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as max_age,
-        COUNT(*) as total_measurements,
-        COUNT(DISTINCT site_id) as site_count,
-        MIN(CAST(measurement_timestamp AS DATE)) as start_date,
-        MAX(CAST(measurement_timestamp AS DATE)) as end_date
-      FROM clinical_data_raw
-      WHERE study_id = $1
-      GROUP BY study_id, study_name, study_phase
-    `;
+    const { data, cached } = await cacheGet(`studies:${studyId}`, async () => {
+      // Aggregated query for participant summary
+      // Calculate age from DOB using EXTRACT(YEAR FROM AGE(...))
+      // Parameterized query ($1) prevents SQL injection
+      const query = `
+        SELECT
+          study_id,
+          study_name,
+          study_phase,
+          COUNT(DISTINCT participant_id) as total_participants,
+          AVG(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as avg_age,
+          MIN(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as min_age,
+          MAX(EXTRACT(YEAR FROM AGE(CAST(participant_dob AS DATE)))) as max_age,
+          COUNT(*) as total_measurements,
+          COUNT(DISTINCT site_id) as site_count,
+          MIN(CAST(measurement_timestamp AS DATE)) as start_date,
+          MAX(CAST(measurement_timestamp AS DATE)) as end_date
+        FROM clinical_data_raw
+        WHERE study_id = $1
+        GROUP BY study_id, study_name, study_phase
+      `;
 
-    const result = await pool.query(query, [studyId]);
+      const result = await pool.query(query, [studyId]);
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        error: 'Study not found',
-        message: `No study found with ID: ${studyId}`
-      });
-    }
+      if (result.rows.length === 0) {
+        return null; // Don't cache 404s
+      }
 
-    // Get gender breakdown (parameterized query with $1)
-    const genderQuery = `
-      SELECT 
-        participant_gender,
-        COUNT(DISTINCT participant_id) as count
-      FROM clinical_data_raw
-      WHERE study_id = $1
-      GROUP BY participant_gender
-      ORDER BY participant_gender
-    `;
+      // Get gender breakdown (parameterized query with $1)
+      const genderQuery = `
+        SELECT
+          participant_gender,
+          COUNT(DISTINCT participant_id) as count
+        FROM clinical_data_raw
+        WHERE study_id = $1
+        GROUP BY participant_gender
+        ORDER BY participant_gender
+      `;
 
-    const genderResult = await pool.query(genderQuery, [studyId]);
+      const genderResult = await pool.query(genderQuery, [studyId]);
 
-    // Get site distribution with names (parameterized query with $1)
-    const siteQuery = `
-      SELECT 
-        site_id,
-        site_name,
-        COUNT(DISTINCT participant_id) as participant_count
-      FROM clinical_data_raw
-      WHERE study_id = $1
-      GROUP BY site_id, site_name
-      ORDER BY site_id
-    `;
+      // Get site distribution with names (parameterized query with $1)
+      const siteQuery = `
+        SELECT
+          site_id,
+          site_name,
+          COUNT(DISTINCT participant_id) as participant_count
+        FROM clinical_data_raw
+        WHERE study_id = $1
+        GROUP BY site_id, site_name
+        ORDER BY site_id
+      `;
 
-    const siteResult = await pool.query(siteQuery, [studyId]);
+      const siteResult = await pool.query(siteQuery, [studyId]);
 
-    const row = result.rows[0];
-    const totalParticipants = parseInt(row.total_participants);
-    const totalMeasurements = parseInt(row.total_measurements);
+      const row = result.rows[0];
+      const totalParticipants = parseInt(row.total_participants);
+      const totalMeasurements = parseInt(row.total_measurements);
 
-    const executionTime = Date.now() - startTime;
-
-    res.json({
-      data: {
+      return {
         study_id: row.study_id,
         study_name: row.study_name,
         study_phase: row.study_phase,
@@ -152,7 +149,21 @@ router.get('/:studyId', async (req: Request, res: Response) => {
           start_date: row.start_date,
           end_date: row.end_date
         }
-      },
+      };
+    });
+
+    if (data === null) {
+      return res.status(404).json({
+        error: 'Study not found',
+        message: `No study found with ID: ${studyId}`
+      });
+    }
+
+    const executionTime = Date.now() - startTime;
+
+    res.json({
+      data,
+      cached,
       executionTime: `${executionTime}ms`,
       executionTimeSeconds: (executionTime / 1000).toFixed(2)
     });

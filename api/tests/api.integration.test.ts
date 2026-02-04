@@ -11,6 +11,16 @@ jest.mock('../src/db', () => ({
   }
 }));
 
+// Mock the cache module - pass through to fetch function
+jest.mock('../src/cache', () => ({
+  cacheGet: jest.fn(async (_key: string, fetchFn: () => Promise<unknown>) => {
+    const data = await fetchFn();
+    return { data, cached: false };
+  }),
+  cacheInvalidate: jest.fn(),
+  cacheStats: jest.fn(() => ({ hits: 0, misses: 0 }))
+}));
+
 const mockPoolQuery = pool.query as jest.Mock;
 
 describe('API Contract Tests', () => {
